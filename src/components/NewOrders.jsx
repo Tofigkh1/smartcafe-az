@@ -12,6 +12,7 @@ const NewOrders = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const audioRef = useRef(null);
     const audioIntervalRef = useRef(null);
+console.log("tables",tables);
 
     useEffect(() => {
         const fetchTables = async () => {
@@ -205,6 +206,12 @@ const NewOrders = () => {
                                             <p className="text-lg font-medium mb-1">{tableOrder.order.stocks[0]?.name}</p>
                                             <p className="text-gray-600">Mikdar: {tableOrder.order.stocks[0]?.pivot.quantity}</p>
                                             <p className="text-gray-600">Toplam: {tableOrder.order.stocks[0]?.pivot.quantity * tableOrder.order.stocks[0]?.price} ₼</p>
+                                            {tableOrder.order.stocks[0] && (
+  <p className="text-gray-600 flex gap-2">
+  <h1 className=' '>Detalı:</h1>  {tableOrder.order.stocks[0].detail?.unit} 
+    
+  </p>
+)}
                                             <div className="mt-4 flex space-x-4">
                                                 <button
                                                     onClick={() => handleOrderAction(tableOrder.id, 'accept', tableOrder.order.stocks[0]?.pivot?.detail_id)}

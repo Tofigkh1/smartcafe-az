@@ -5,7 +5,7 @@ import axios from 'axios';
 import AccessDenied from '../components/AccessDenied';
 import { base_url,img_url } from '../api/index';
 import { Helmet } from 'react-helmet';
-import DontActiveAcount from '../components/DontActiveAcount';
+// import DontActiveAcount from '../components/DontActiveAcount';
 import PasswordScreen from '../components/ScreenPassword';
 const getAuthHeaders = () => {
     const token = localStorage.getItem("token");
@@ -25,6 +25,8 @@ function PersonelTanimlari() {
     const [error, setError] = useState('');
     const [accessDenied, setAccessDenied] = useState(false); 
     const [ActiveUser, setActiveUser] = useState(false);
+    console.log("ActiveUser",ActiveUser);
+    
     useEffect(() => {
         axios.get(`${base_url}/personal`, getAuthHeaders())
             .then(response => {

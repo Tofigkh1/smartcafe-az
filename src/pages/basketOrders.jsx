@@ -237,15 +237,29 @@ console.log("items",items);
             <h3 className="text-lg font-semibold">{basketItems.length}</h3>
             <h3 className="text-lg font-semibold">məhsul</h3>
           </div>
-          <div>
+
+     {/* Ürün adlarını sadece bir kere göstermek için name'leri filtrele */}
+{/* <p className="text-xl text-gray-700 mr-16 font-semibold -mt-1">
+  {[...new Set(items.map((item) => item.name))].map((name, index, arr) => (
+    <span key={index}>
+      {name}
+      {index < arr.length - 1 && ', '}
+    </span>
+  ))}
+</p> */}
+
+          {/* <div>
             <h3 className="text-lg font-semibold">{totalPrice.toFixed(2)} ₼</h3>
-          </div>
+          </div> */}
         </div>
 
         {/* Scroll yapılabilen alan */}
         <div className="space-y-4 max-h-[390px] overflow-y-auto">
         {items.map((item) => {
   const uniqueKey = `${item.id}-${item.detail_id}`;
+  const matchedDetail = item.details?.find(detail => detail.id === item.detail_id);
+  const unit = matchedDetail?.unit || ""; // Unit bilgisi varsa al, yoksa boş string
+
   return (
     <div
       key={uniqueKey}
@@ -254,8 +268,16 @@ console.log("items",items);
       }`}
     >
       <div className="flex flex-col gap-2">
-        <span>{item.name}</span>
-        <span>{item.price} ₼</span>
+      <div className="flex flex-col gap-2">
+  <span>{item.price} ₼</span>
+  {unit ? (
+    <span className="text-sm text-gray-500">{unit}</span>
+  ) : (
+    <span>{item.name}</span>
+  )}
+</div>
+
+    
       </div>
       <div className="flex items-center space-x-2">
         <button
@@ -281,6 +303,7 @@ console.log("items",items);
     </div>
   );
 })}
+
 
 
         </div>

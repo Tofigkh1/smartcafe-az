@@ -1,7 +1,9 @@
 import React from 'react';
 import HesapKes from '../HesapKes';
 
-const HesabKesAll = ({ setHesabKes, tableName, orderId, totalAmount }) => {
+const HesabKesAll = ({ setHesabKes, tableName, orderId, totalAmount,orderStocks }) => {
+  console.log("orderStocks",orderStocks);
+  
 
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
@@ -19,7 +21,7 @@ const HesabKesAll = ({ setHesabKes, tableName, orderId, totalAmount }) => {
           
         </div>
         <div className="p-4 max-h-[80vh] overflow-y-auto">
-          <HesapKes orderId={orderId} totalAmount={totalAmount} />
+          <HesapKes orderStocks={orderStocks} orderId={orderId} totalAmount={totalAmount} />
         </div>
       </div>
     </div>

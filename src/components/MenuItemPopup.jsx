@@ -141,112 +141,83 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { addItem } from "../redux/basketSlice";
 
-const MenuItemPopup = ({ item, onClose, onConfirm, onCloseModal,onCloseClick}) => {
+const MenuItemPopup = ({ item, onClose, onCloseModal, onCloseClick }) => {
   const [quantity, setQuantity] = useState(1);
   const dispatch = useDispatch();
-  const [oneProduct, setOneProduct] = useState(null);
-  const [selectedProduct, setSelectedProduct] = useState({
-    id: null,
-    name: "",
-    price: 0,
-    quantity: 1,
-  });
-  console.log("itemsebetredux",item);
-  console.log("selectedProductIdDetails",selectedProduct);
-  
-  
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const totalPrice = selectedProduct ? selectedProduct.price * quantity : item.price * quantity;
+
   const handleItemClick = () => {
-    const productToAdd = selectedProduct.id
-      ? {
-          id: item.id,
-          detail_id: selectedProduct.id, // Detay ID'sini ekle
-          name: item.name,
-          price: selectedProduct.price,
-          quantity,
-          desc: selectedProduct.name,
-          details: item.details // Tüm detayları da ekleyelim
-        }
-      : {
-          id: item.id,
-          detail_id: null,
-          name: item.name,
-          price: item.price,
-          quantity,
-          desc: null,
-          details: item.details
-        };
-  
+    const productToAdd = {
+      id: item.id,
+      detail_id: selectedProduct ? selectedProduct.id : null,
+      name: item.name,
+      price: selectedProduct ? selectedProduct.price : item.price,
+      quantity,
+      desc: selectedProduct ? selectedProduct.name : null,
+      details: item.details,
+    };
+
     dispatch(addItem(productToAdd));
     onCloseModal();
     onCloseClick();
     onClose();
   };
-  
-  
-  
 
   const increaseQuantity = () => setQuantity(quantity + 1);
   const decreaseQuantity = () => {
     if (quantity > 1) setQuantity(quantity - 1);
   };
 
-  // const handleConfirm = () => {
-  //   onConfirm(item, quantity);
-  //   onClose(); // Popup'u kapat
-  // };
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[99999]">
       <div className="bg-white p-6 rounded-lg w-[460px] mx-2 shadow-lg">
         <h3 className="text-lg font-bold text-center mb-4">Məhsul seçimi</h3>
-        <div className="space-y-2">
-  <div className="flex justify-between px-4 py-1 bg-[#f9f9f9] h-16 border border-gray-300 rounded-md cursor-pointer hover:bg-[#e6f3ff] hover:border-blue-500 transition duration-300 ease-in-out">
-    <div className="flex flex-col gap-2">
-      <div>{item?.name}</div>
-      <div>{item?.price} ₼</div>
-    </div>
-  </div>
 
-  {/* Details'i map ile göster */}
-    {item.details.map((detail) => (
-   <div
-     key={detail.id}
-     className={`flex justify-between px-4 py-1 h-16 border rounded-md cursor-pointer transition duration-300 ease-in-out
-       ${selectedProduct.id === detail.id ? "bg-[#e6f3ff] border-blue-500" : "bg-[#f9f9f9] border-gray-300 hover:bg-[#e6f3ff] hover:border-blue-500"}`}
-    onClick={() =>
-      setSelectedProduct({
-        id: detail.id,
-        name: detail.unit || "Bilinmiyor",
-        price: Number(detail.price),
-        quantity: 1,
-      })
-    }
-  >
-    <div className="flex flex-col gap-2">
-      <div>
-        {detail.count} {detail.unit}
-      </div>
-      <div>{detail.price} ₼</div>
-    </div>
-  </div>
- ))}
-</div>
+        {/* Seçilen ürün ve toplam fiyat */}
+        <div className="text-center text-lg font-bold mb-4">
+          {selectedProduct ? selectedProduct.name : item.name} - {totalPrice.toFixed(2)} ₼
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex justify-between px-4 py-1 bg-[#f9f9f9] h-16 border border-gray-300 rounded-md cursor-pointer hover:bg-[#e6f3ff] hover:border-blue-500 transition duration-300 ease-in-out">
+            <div className="flex flex-col gap-2">
+              <div>{item?.name}</div>
+              <div>{item?.price} ₼</div>
+            </div>
+          </div>
+
+          {/* Details'i map ile göster */}
+          {item.details.map((detail) => (
+            <div
+              key={detail.id}
+              className={`flex justify-between px-4 py-1 h-16 border rounded-md cursor-pointer transition duration-300 ease-in-out
+                ${selectedProduct?.id === detail.id ? "bg-[#e6f3ff] border-blue-500" : "bg-[#f9f9f9] border-gray-300 hover:bg-[#e6f3ff] hover:border-blue-500"}`}
+              onClick={() =>
+                setSelectedProduct({
+                  id: detail.id,
+                  name: detail.unit || "Bilinmiyor",
+                  price: Number(detail.price),
+                })
+              }
+            >
+              <div className="flex flex-col gap-2">
+                <div>
+                  {detail.count} {detail.unit}
+                </div>
+                <div>{detail.price} ₼</div>
+              </div>
+            </div>
+          ))}
+        </div>
 
         <div className="flex justify-center items-center my-4">
-          <button
-            onClick={decreaseQuantity}
-            className="w-[40px] h-[40px] bg-[#007bff] rounded-full text-lg text-white"
-          >
-            -
-          </button>
+          <button onClick={decreaseQuantity} className="w-[40px] h-[40px] bg-[#007bff] rounded-full text-lg text-white">-</button>
           <span className="mx-1 text-lg border px-6 rounded-md">{quantity}</span>
-          <button
-            onClick={increaseQuantity}
-            className="h-[40px] w-[40px] bg-[#007bff] text-white rounded-full"
-          >
-            +
-          </button>
+          <button onClick={increaseQuantity} className="h-[40px] w-[40px] bg-[#007bff] text-white rounded-full">+</button>
         </div>
+
         <div className="flex w-full text-xs font-normal space-x-3 justify-between">
           <button
             onClick={handleItemClick}
@@ -258,7 +229,7 @@ const MenuItemPopup = ({ item, onClose, onConfirm, onCloseModal,onCloseClick}) =
             onClick={onClose}
             className="text-white w-full rounded-3xl py-2 bg-[#dc3545] transform transition-transform hover:scale-105 "
           >
-           Bağla
+            Bağla
           </button>
         </div>
       </div>
@@ -267,6 +238,7 @@ const MenuItemPopup = ({ item, onClose, onConfirm, onCloseModal,onCloseClick}) =
 };
 
 export default MenuItemPopup;
+
 
 
 

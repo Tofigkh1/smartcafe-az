@@ -211,6 +211,12 @@ const Header = ({ token, logOut }) => {
                       >
                         Nizamlamalar
                       </Link>
+                      <Link
+                        to="/material"
+                        className="dropdown-link block px-4 py-2 text-gray-700 hover:text-blue-500"
+                      >
+                        Xammal
+                      </Link>
                     </li>
                   </ul>
                 )}
@@ -404,6 +410,16 @@ const Header = ({ token, logOut }) => {
                           <i className="fa-solid fa-cogs"></i>
                           <span>Nizamlamalar</span>
                         </Link>
+
+                        <Link
+                        to="/material"
+                        className="nav-link flex items-center space-x-2"
+                        onClick={handleMobileMenuToggle}
+                      >
+                          <i className="fa fa-boxes"></i>
+                          <span>Xammal</span>
+                        
+                      </Link>
                       </li>
                     </ul>
                   )}

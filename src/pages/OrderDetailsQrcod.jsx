@@ -960,8 +960,8 @@ const RestaurantMenu = () => {
                   width={200}
                   height={150}
                 />
-                <div className="absolute pt-0.5 flex justify-center justify-items-center mt-24 right-0 mr-2 bg-[#801423] w-12 h-5 rounded-md text-center ml-3">
-                <h1 className="text-xs   text-white font-semibold ">{item.price}₼</h1>
+                <div className="absolute  flex justify-center justify-items-center mt-24 right-0 mr-2 bg-[#801423] w-14 h-5 rounded-md text-center ml-3">
+                <h1 className="text-sm   text-white font-bold ">{item.price}₼</h1>
                 </div>
                            
                 <h1 className="h-[15%] mt-1 text-lg font-semibold ml-3">{item.name}</h1>

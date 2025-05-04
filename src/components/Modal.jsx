@@ -9,6 +9,11 @@ import MasaBirlesdir from './MasaBirlesdir';
 import QrMenuKod from './QrMenuKod';
 import OncedenOde from './OncedenOde';
 import { base_url } from '../api/index';
+import { fetchTableOrderStocks } from '../redux/stocksSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
+
+
 const getHeaders = () => ({
     headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -18,12 +23,29 @@ const getHeaders = () => ({
 });
 
 function Modal({ tableItemData, groups, type, setShowDetail, _modalMain }) {
+    console.log("tableItemData",tableItemData.id);
+    
     const [modalMain, setModalMain] = useState(_modalMain);
     const [ordersId, setOrdersId] = useState({});
     const [refreshFetch, setRefreshFetch] = useState(false);
+    const { id } = useParams();
+    const dispatch = useDispatch();
+
+    console.log("id",id);
+    
+
+    const { allItems, orders, loading, error } = useSelector((state) => state.stocks);
+
+    useEffect(() => {
+        dispatch(fetchTableOrderStocks(tableItemData.id));
+      }, [id, dispatch]);
+    
+    console.log("ordersModal2",orders);
+    
+    
+    
 
     const qalig = ordersId.total_price - ordersId.total_prepayment;
-
     const fetchTableOrders = async () => {
         try {
             const response = await axios.get(`${base_url}/tables/${tableItemData.id}/order`, getHeaders());
@@ -41,6 +63,17 @@ function Modal({ tableItemData, groups, type, setShowDetail, _modalMain }) {
     useEffect(() => {
         fetchTableOrders();
     }, [tableItemData.id, refreshFetch]);
+   
+
+ 
+    
+
+
+if (orders && orders.length > 0) {
+    console.log("orders2", orders[0].order_id);
+  } else {
+    console.log("orders2: Order verisi henüz gelmedi veya boş.");
+  }
 
     return (
         <div className="max-w-mobile fixed inset-0 bg-[#444444e6] flex items-center justify-center p-4">

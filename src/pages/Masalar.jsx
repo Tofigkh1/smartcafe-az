@@ -2,10 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Modal from "../components/Modal";
 import MasaAyarlari from "../components/MasaAyarlari";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import AccessDenied from "../components/AccessDenied";
 import { base_url } from "../api/index";
 import { Helmet } from "react-helmet";
+import { fetchTableOrderStocks } from "../redux/stocksSlice";
+import { useDispatch, useSelector } from "react-redux";
+// import ClipLoader from "react-spinners/ClipLoader";
+
 const getHeaders = () => ({
   headers: {
     Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -25,10 +29,20 @@ const Masalar = () => {
   const [tables, setTables] = useState([]);
   const [accessDenied, setAccessDenied] = useState(false);
   const [role, setrole] = useState(localStorage.getItem("role"));
+  const [loading, setLoading] = useState(false);
+  const { id } = useParams();
+  const dispatch = useDispatch();
+  const { allItems, orders, error } = useSelector((state) => state.stocks);
+
+  console.log("id",id);
+  console.log("tables",tables);
+  
   const [tableColors, setTableColors] = useState({
     empty: "#ff0000",
     booked: "#834e4e",
   });
+
+
   const [tableItemData, setTableItemData] = useState({});
   // window.location.reload()
   // Fetch table groups from API
@@ -60,13 +74,22 @@ const Masalar = () => {
     }
   };
 
+    
+  
+
+
+  
+  
+
   // Fetch tables from API with optional filter
   const fetchTables = async (groupId) => {
     try {
+      setLoading(true); // başta yükleme başlat
       const response = await axios.get(`${base_url}/tables`, {
         ...getHeaders(),
         params: { table_group_id: groupId },
       });
+  
       setTables(response.data.tables);
       setTableColors({
         empty:
@@ -76,30 +99,18 @@ const Masalar = () => {
           localStorage.getItem("booked_table_color") ||
           response.data.booked_table_color,
       });
-      // console.log(response.data);
     } catch (error) {
-      if (
-        error.response &&
-        error.response.status === 403 &&
-        error.response.data.message ===
-          "User does not belong to any  active restaurant."
-      ) {
-        setActiveUser(true); // Set access denied if response status is 403
-      }
-      if (
-        error.response &&
-        error.response.status === 403 &&
-        error.response.data.message === "Forbidden"
-      ) {
-        // setAccessDenied(true); // Set access denied if response status is 403
-      } else {
-        console.error("Error loading customers:", error);
-      }
+      console.error("Error loading tables:", error);
+    } finally {
+      setLoading(false); // her durumda yükleme biter
     }
   };
  
 
+  
+  
 
+  
   // Fetch groups and tables on component mount
   useEffect(() => {
     fetchGroups();
@@ -118,7 +129,19 @@ const Masalar = () => {
     localStorage.setItem("masaType", masaType);
   }, [masaType]);
 
+
+
+
+
+  console.log("tableData",allItems);
+console.log("orders",orders);
+
+  useEffect(() => {
+    dispatch(fetchTableOrderStocks(id));
+  }, [id, dispatch]);
+
   if (accessDenied) return <AccessDenied onClose={setAccessDenied} />;
+
   return (
     <>
    
@@ -166,7 +189,8 @@ const Masalar = () => {
 
         {/* Table display */}
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-5 gap-4">
-          {tables.map((table) => (
+    
+        {tables.map((table) => (
             <div
               key={table.id}
               className={`relative rounded-lg overflow-hidden shadow-lg transition-transform duration-300 min-h-[150px] sm:min-h-[200px] lg:min-h-[150px] flex flex-col justify-center items-center p-4`}
@@ -209,7 +233,8 @@ const Masalar = () => {
                 )}
               </div>
             </div>
-          ))}
+       
+        ))}
         </div>
       </section>
 

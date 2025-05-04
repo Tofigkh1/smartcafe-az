@@ -21,7 +21,6 @@ const AdditionalPriceInput = ({
   onPriceChange,
   onCountChange,
   onNumberChange,
-
   addPrice,
   removePrice,
 }) => (
@@ -91,7 +90,29 @@ function AddStok({ setAddStok }) {
   console.log(formData, "formdata");
   const [groups, setGroups] = useState([]);
   const [accessDenied, setAccessDenied] = useState(false);
+  const [rawMaterials, setRawMaterials] = useState([]);
+  
+  const [selectedRawMaterials, setSelectedRawMaterials] = useState([
+    { id: "", quantity: 1 },
+  ]);
+  
+  const handleRawMaterialChange = (index, field, value) => {
+    const updated = [...selectedRawMaterials];
+    updated[index][field] = value;
+    setSelectedRawMaterials(updated);
+  };
+  
+  const addRawMaterialField = () => {
+    setSelectedRawMaterials([...selectedRawMaterials, { id: "", quantity: 1 }]);
+  };
+  
+  const removeRawMaterialField = (index) => {
+    const updated = selectedRawMaterials.filter((_, i) => i !== index);
+    setSelectedRawMaterials(updated);
+  };
 
+  console.log("rawMaterials",rawMaterials);
+  
   useEffect(() => {
     const fetchGroups = async () => {
       try {
@@ -193,13 +214,37 @@ function AddStok({ setAddStok }) {
     });
   
     try {
-      await axios.post(`${base_url}/stocks`, formDataToSend, {
+      const token = localStorage.getItem("token");
+      const stockResponse = await axios.post(`${base_url}/stocks`, formDataToSend, {
         ...getAuthHeaders(),
         headers: {
           ...getAuthHeaders().headers,
           "Content-Type": "multipart/form-data",
         },
       });
+    
+      const stockId = stockResponse.data?.id;
+    console.log("stockId",stockId);
+    
+    if (stockId && selectedRawMaterials.length > 0) {
+      await axios.post(
+        `${base_url}/stocks/${stockId}/attach-raw-material`,
+        {
+          raw_materials: selectedRawMaterials.map((mat) => ({
+            id: parseInt(mat.id),
+            quantity: parseFloat(mat.quantity),
+          })),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    }
+    
+    
+    
       setAddStok(false);
     } catch (error) {
       if (
@@ -213,8 +258,26 @@ function AddStok({ setAddStok }) {
         alert("An error occurred while adding the stock. Please try again later.");
       }
     }
+    
   };
-  
+
+
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${base_url}/raw-materials`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log("response",response);
+      
+      setRawMaterials(response.data.data);
+    } catch (error) {
+      console.error("Error fetching raw materials:", error);
+    }
+  };
+
 
   const removePrice = (index) => {
     setFormData((prevData) => {
@@ -222,6 +285,12 @@ function AddStok({ setAddStok }) {
       return { ...prevData, additionalPrices: newPrices };
     });
   };
+
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
 
   if (accessDenied) return <AccessDenied onClose={setAccessDenied} />;
 
@@ -370,9 +439,69 @@ function AddStok({ setAddStok }) {
                 required
               />
             </div>
+
+            <div>
+          
+        <h3 className="text-sm font-semibold mb-2">Xammallar</h3>
+{selectedRawMaterials.map((material, index) => (
+  <div key={index} className="flex gap-2 mb-2">
+    <select
+      className="border rounded py-2 px-3 w-full text-sm font-medium"
+      value={material.id}
+      onChange={(e) =>
+        handleRawMaterialChange(index, "id", e.target.value)
+      }
+      required
+    >
+      <option value="">Seç</option>
+      {rawMaterials.map((raw) => (
+        <option key={raw.id} value={raw.id}>
+          {raw.name}
+        </option>
+      ))}
+    </select>
+    <input
+      className="border rounded py-2 px-3 w-full text-sm font-medium"
+      type="number"
+      step="0.01"
+      value={material.quantity}
+      onChange={(e) =>
+        handleRawMaterialChange(index, "quantity", e.target.value)
+      }
+      required
+    />
+    <button
+      type="button"
+      onClick={() => removeRawMaterialField(index)}
+      className="text-red-500"
+    >
+      <FaTrash />
+    </button>
+  </div>
+))}
+<button
+  type="button"
+  onClick={addRawMaterialField}
+  className="border hover:bg-sky-500 rounded py-1 px-2 bg-sky-600 text-white text-sm font-medium"
+>
+  Xammal əlavə et
+</button>
+
+
+                                      
+                                  
+                               
+                    
+
+                  
+            </div>
+
+            
           </>
         )}
       </div>
+
+      
     </form>
   );
 }

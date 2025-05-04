@@ -38,7 +38,8 @@ function GunlukKasa() {
     const [dataTotal, setDataTotal] = useState({});
     const [modalData, setModalData] = useState(null);
 
-    console.log("dataTotal",dataTotal);
+    console.log("modalData",modalData);
+    console.log("data",data);
     
 
     // Filter state
@@ -56,13 +57,17 @@ function GunlukKasa() {
         if (startDate) params.append('open_date', startDate);
         if (endDate) params.append('close_date', endDate);
         if (paymentType) params.append('type', paymentType);
-
-        axios.get(`${base_url}/payments?${params.toString()}`, getHeaders())
+    
+        axios.get(`${base_url}/payments`, getHeaders())
             .then(response => {
-                setData(response.data.payments.map(item => ({
-                    ...item,
-                    duration: formatDuration(item.days_taken, item.hours_taken, item.minutes_taken),
-                })));
+                const sortedData = response.data.payments
+                    .map(item => ({
+                        ...item,
+                        duration: formatDuration(item.days_taken, item.hours_taken, item.minutes_taken),
+                    }))
+                    .sort((a, b) => new Date(b.open_date) - new Date(a.open_date)); // Yeni → Eski
+    
+                setData(sortedData);
                 setDataTotal({
                     totalKasa: response.data.total_amount,
                     totalCash: response.data.total_cash,
@@ -71,18 +76,16 @@ function GunlukKasa() {
             })
             .catch(error => {
                 if (error.response && error.response.status === 403 && error.response.data.message === "User does not belong to any  active restaurant.") {
-                    setActiveUser(true); // Set access denied if response status is 403
+                    setActiveUser(true);
                 }
                 if (error.response && error.response.status === 403 && error.response.data.message === "Forbidden") {
-                    setAccessDenied(true); // Set access denied if response status is 403
+                    setAccessDenied(true);
                 } else {
                     console.error('Error fetching orders:', error);
                 }
             });
-
-     
-            
     };
+    
 
     useEffect(() => {
         fetchKasa();
@@ -446,26 +449,39 @@ function GunlukKasa() {
                         <p><strong>Cəmi:</strong> {modalData.total_amount} ₼</p>
                         <p><strong>Ödəniş növü</strong> {modalData.type}</p>
                         <p><strong>İşçi:</strong> {modalData.user_name}</p>
-
                         <h4 className='text-lg font-semibold mt-4 mb-2'>Sifarişlər</h4>
-                        {/* <table className='w-full text-left border rounded bg-[#fafbfc]'>
-                            <thead className='border-b'>
-                                <tr>
-                                    <th className='p-3'>Adı</th>
-                                    <th className='p-3'>Miktar</th>
-                                    <th className='p-3'>Toplam</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {modalData.orders.map((order, index) => (
-                                    <tr key={index}>
-                                        <td className='p-3'>{order.name}</td>
-                                        <td className='p-3'>{order.quantity}</td>
-                                        <td className='p-3'>{order.total}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table> */}
+<table className='w-full text-left border rounded bg-[#fafbfc]'>
+  <thead className='border-b'>
+    <tr>
+      <th className='p-3'>Adı</th>
+      <th className='p-3'>Miqdar</th>
+      <th className='p-3'>Qiyməti</th>
+    </tr>
+  </thead>
+  <tbody>
+    {modalData?.items && modalData.items.length > 0 ? (
+      <>
+        {modalData.items.map((item, index) => (
+          <tr key={`${item.name}-${index}`} className='border-b'>
+            <td className='p-3'>{item.name}</td>
+            <td className='p-3'>{item.quantity}</td>
+            <td className='p-3'>{item.price}</td>
+          </tr>
+        ))}
+        <tr className='font-semibold'>
+          <td className='p-3' colSpan={2}>Cəmi</td>
+          <td className='p-3'>{modalData.total_amount}</td>
+        </tr>
+      </>
+    ) : (
+      <tr>
+        <td className='p-3' colSpan={3}>Sifariş yoxdur</td>
+      </tr>
+    )}
+  </tbody>
+</table>
+
+
                   
                         <button
                             className='mt-4 px-4 py-2 bg-red-600 text-white rounded'
